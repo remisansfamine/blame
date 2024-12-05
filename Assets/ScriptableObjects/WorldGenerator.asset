@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cbcd90b03be34dbe24f05a0cf4304, type: 3}
+  m_Name: WorldGenerator
+  m_EditorClassIdentifier: 
+  offset: {x: 70, y: -50}
+  cellScale: 1.1
+  cellPrefab: {fileID: 2469067704285265716, guid: 310575ecd64a1bc48a9a0e8b3f1c1cbf, type: 3}
+  spawnRate: 0.413
+  noiseResolution: 2

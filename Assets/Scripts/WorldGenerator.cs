@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WorldGenerator", menuName = "Generators/WorldGenerator")]
@@ -17,6 +18,9 @@ public class WorldGenerator : ScriptableObject
 
     [SerializeField] public float noiseResolution = 1f;
 
+
+    private Dictionary<Vector2Int, GameObject> RenderedCells = new Dictionary<Vector2Int, GameObject>();
+
     void Generate()
     {
 
@@ -32,16 +36,17 @@ public class WorldGenerator : ScriptableObject
         return new Vector3(x * CellScale, 0f, y * CellScale);
     }
 
-    float GetNoiseValueFromChunkSpace(float x, float y)
+    float GetNoiseValueFromChunkSpace(float x, float y, float seed = 0)
     {
         float noiseScale = 1f / noiseResolution;
-        return Mathf.PerlinNoise(x * noiseScale + offset.x, y * noiseScale + offset.y);
+        return Mathf.PerlinNoise(seed + x * noiseScale + offset.x, seed + y * noiseScale + offset.y);
     }
 
     float GetNoiseValueFromWorldSpace(Vector2Int Coordinates)
     {
         return 0.0f;
     }
+
 
     public void UpdateVirtualMap(Transform cameraTransform, float virtualGenerationDistance, Transform cellContainer)
     {
@@ -59,6 +64,80 @@ public class WorldGenerator : ScriptableObject
                     Vector3 generatedChunkPosition = FromGridSpaceToWorldSpace(x, y);
                     Quaternion generatedChunkRotation = Quaternion.identity;
                     GameObject.Instantiate(cellPrefab, generatedChunkPosition, generatedChunkRotation, cellContainer);
+                }
+            }
+        }
+    }
+
+
+    public void UpdateRenderedMap(Transform cameraTransform, float renderGenerationDistance, Transform cellContainer)
+    {
+
+    }
+
+    public void UpdateCells(ChunkLoadComponent chunkLoader, CellsData cellsData, Transform cellContainer)
+    {
+        Vector2Int LoaderPosition = FromWorldSpaceToGridSpace(chunkLoader.transform.position);
+
+        float sqrRenderDistance = chunkLoader.RenderDistance * chunkLoader.RenderDistance;
+        int halfExtent = chunkLoader.VirtualDistance;
+
+        Vector2Int Coordinate = Vector2Int.zero;
+        for (Coordinate.x = LoaderPosition.x - halfExtent; Coordinate.x < LoaderPosition.x + halfExtent; Coordinate.x++)
+        {
+            for (Coordinate.y = LoaderPosition.y - halfExtent; Coordinate.y < LoaderPosition.y + halfExtent; Coordinate.y++)
+            {
+                if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.EMPTY))
+                    continue;
+
+                //  Calculate square distance between current coordinate and chunk loader
+                float DistSqr = (LoaderPosition.x - Coordinate.x) * (LoaderPosition.x - Coordinate.x) +
+                                 (LoaderPosition.y - Coordinate.y) * (LoaderPosition.y - Coordinate.y);
+
+                //  The cell is currently rendered
+                if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.RENDERED))
+                {
+                    //  Should it be unrendered
+                    if (DistSqr > sqrRenderDistance)
+                    {
+                        //  NOTE : Is dictionary the best solution ?
+                        Destroy(RenderedCells[Coordinate]);
+                        RenderedCells.Remove(Coordinate);
+
+                        //  Switch from rendered to virtual
+                        cellsData.UnregisterCellByState(Coordinate, CellsData.CellState.RENDERED);
+                        cellsData.RegisterCellByState(Coordinate, CellsData.CellState.VIRTUAL);
+                    }
+                }
+
+                //  The cell is supposed to be rendered but is not rendered yet
+                else if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.VIRTUAL))
+                {
+                    //  Should we render this cell ?
+                    if (DistSqr <= sqrRenderDistance)
+                    {
+                        Vector3 generatedChunkPosition = FromGridSpaceToWorldSpace(Coordinate.x, Coordinate.y);
+                        Quaternion generatedChunkRotation = Quaternion.identity;
+
+                        //  NOTE : Is dictionary the best solution ?
+                        RenderedCells.Add(Coordinate, GameObject.Instantiate(cellPrefab, generatedChunkPosition, generatedChunkRotation, cellContainer));
+
+                        //  Switch from virtuaal to rendered
+                        cellsData.UnregisterCellByState(Coordinate, CellsData.CellState.VIRTUAL);
+                        cellsData.RegisterCellByState(Coordinate, CellsData.CellState.RENDERED);
+                    }
+                }
+
+                //  The cell has not been registered in any state, let's check if it should be filled depending on a noise
+                else if (GetNoiseValueFromChunkSpace(Coordinate.x, Coordinate.y) >= 1f - spawnRate)
+                {
+                    cellsData.RegisterCellByState(Coordinate, CellsData.CellState.VIRTUAL);
+                }
+
+                //  Mark this cell as empty as it has no state yet and was not filled by the noise
+                else
+                {
+                    cellsData.RegisterCellByState(Coordinate, CellsData.CellState.EMPTY);
                 }
             }
         }

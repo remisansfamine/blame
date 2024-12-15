@@ -79,13 +79,17 @@ public class WorldGenerator : ScriptableObject
     {
         Vector2Int LoaderPosition = FromWorldSpaceToGridSpace(chunkLoader.transform.position);
 
+        float sqrUnloadDistance = chunkLoader.UnloadDistance * chunkLoader.UnloadDistance;
         float sqrRenderDistance = chunkLoader.RenderDistance * chunkLoader.RenderDistance;
-        int halfExtent = chunkLoader.VirtualDistance;
 
         Vector2Int Coordinate = Vector2Int.zero;
-        for (Coordinate.x = LoaderPosition.x - halfExtent; Coordinate.x < LoaderPosition.x + halfExtent; Coordinate.x++)
+        for (Coordinate.x = LoaderPosition.x - chunkLoader.VirtualDistance; 
+             Coordinate.x < LoaderPosition.x + chunkLoader.VirtualDistance;
+             Coordinate.x++)
         {
-            for (Coordinate.y = LoaderPosition.y - halfExtent; Coordinate.y < LoaderPosition.y + halfExtent; Coordinate.y++)
+            for (Coordinate.y = LoaderPosition.y - chunkLoader.VirtualDistance; 
+                 Coordinate.y < LoaderPosition.y + chunkLoader.VirtualDistance; 
+                 Coordinate.y++)
             {
                 if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.EMPTY))
                     continue;
@@ -97,8 +101,8 @@ public class WorldGenerator : ScriptableObject
                 //  The cell is currently rendered
                 if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.RENDERED))
                 {
-                    //  Should it be unrendered
-                    if (DistSqr > sqrRenderDistance)
+                    //  Should it be unloaded
+                    if (DistSqr > sqrUnloadDistance)
                     {
                         //  NOTE : Is dictionary the best solution ?
                         Destroy(RenderedCells[Coordinate]);

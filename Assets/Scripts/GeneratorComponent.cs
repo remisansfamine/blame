@@ -20,7 +20,7 @@ public class GeneratorComponent : MonoBehaviour
         RegisterChunkLoader(DEBUG_ChunkLoader);
     }
 
-    void FixedUpdate()
+    void Update()
     {
         foreach (ChunkLoadComponent chunkLoader in chunkLoaders)
         {

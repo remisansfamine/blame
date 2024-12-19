@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: WorldGenerator
   m_EditorClassIdentifier: 
   offset: {x: 70, y: -50}
-  cellScale: 105
+  cellScale: 1.1
   cellPrefab: {fileID: 2469067704285265716, guid: 310575ecd64a1bc48a9a0e8b3f1c1cbf, type: 3}
   spawnRate: 0.2
   noiseResolution: 2
+  neighborhoodRange: 5

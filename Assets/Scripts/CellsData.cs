@@ -1,8 +1,7 @@
 using NUnit.Framework.Constraints;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
-
-
 
 public class CellsData
 {
@@ -13,9 +12,14 @@ public class CellsData
         RENDERED      //  Cell is filled and in the render range 
     }
 
-    private HashSet<Vector2Int> emptyCells   = new HashSet<Vector2Int>();
-    private HashSet<Vector2Int> virtualCells = new HashSet<Vector2Int>();
-    private HashSet<Vector2Int> renderedCells  = new HashSet<Vector2Int>();
+    private HashSet<Vector2Int> emptyCells = new HashSet<Vector2Int>();
+    private Dictionary<Vector2Int, VirtualCell>  virtualCells = new Dictionary<Vector2Int, VirtualCell>();
+    private Dictionary<Vector2Int, GameObject> renderedCells = new Dictionary<Vector2Int, GameObject>();
+
+    public HashSet<Vector2Int> EmptyCells => emptyCells;
+    public Dictionary<Vector2Int, VirtualCell> VirtualCells => virtualCells;
+    public Dictionary<Vector2Int, GameObject> RenderedCells => renderedCells;
+
 
     public bool IsCellOfState(Vector2Int cellCoordinate, CellState State)
     {
@@ -25,48 +29,38 @@ public class CellsData
                 return emptyCells.Contains(cellCoordinate);
 
             case CellState.VIRTUAL:
-                return virtualCells.Contains(cellCoordinate);
+                return virtualCells.ContainsKey(cellCoordinate);
 
             case CellState.RENDERED:
-                return renderedCells.Contains(cellCoordinate);
+                return renderedCells.ContainsKey(cellCoordinate);
             
             default: return false;
         }
     }
-    
-    public void RegisterCellByState(Vector2Int cellCoordinate, CellState State)
+
+    public void ClearAll()
     {
-        switch (State)
-        {
-            case CellState.EMPTY:
-                emptyCells.Add(cellCoordinate);
-                break;
+        emptyCells.Clear();
+        virtualCells.Clear();
 
-            case CellState.VIRTUAL:
-                virtualCells.Add(cellCoordinate);
-                break;
+        foreach (var cell in renderedCells)
+            Object.Destroy(cell.Value);
 
-            case CellState.RENDERED:
-                renderedCells.Add(cellCoordinate);
-                break;
-        }
+        renderedCells.Clear();
     }
 
-    public void UnregisterCellByState(Vector2Int cellCoordinate, CellState State)
+    public void ClearAt(Vector2Int position)
     {
-        switch (State)
+        if (emptyCells.Remove(position))
+            return;
+
+        if (virtualCells.Remove(position))
         {
-            case CellState.EMPTY:
-                emptyCells.Remove(cellCoordinate);
-                break;
-
-            case CellState.VIRTUAL:
-                virtualCells.Remove(cellCoordinate);
-                break;
-
-            case CellState.RENDERED:
-                renderedCells.Remove(cellCoordinate);
-                break;
+            if (renderedCells.TryGetValue(position, out var cell))
+            {
+                Object.Destroy(cell);
+                renderedCells.Remove(position);
+            }
         }
     }
 }

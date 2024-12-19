@@ -83,20 +83,16 @@ public class WorldGenerator : ScriptableObject
         float sqrRenderDistance = chunkLoader.RenderDistance * chunkLoader.RenderDistance;
 
         Vector2Int Coordinate = Vector2Int.zero;
-        for (Coordinate.x = LoaderPosition.x - chunkLoader.VirtualDistance; 
-             Coordinate.x < LoaderPosition.x + chunkLoader.VirtualDistance;
-             Coordinate.x++)
+        for (Coordinate.x = LoaderPosition.x - chunkLoader.VirtualDistance; Coordinate.x < LoaderPosition.x + chunkLoader.VirtualDistance; Coordinate.x++)
         {
-            for (Coordinate.y = LoaderPosition.y - chunkLoader.VirtualDistance; 
-                 Coordinate.y < LoaderPosition.y + chunkLoader.VirtualDistance; 
-                 Coordinate.y++)
+            for (Coordinate.y = LoaderPosition.y - chunkLoader.VirtualDistance; Coordinate.y < LoaderPosition.y + chunkLoader.VirtualDistance; Coordinate.y++)
             {
                 if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.EMPTY))
                     continue;
 
                 //  Calculate square distance between current coordinate and chunk loader
                 float DistSqr = (LoaderPosition.x - Coordinate.x) * (LoaderPosition.x - Coordinate.x) +
-                                 (LoaderPosition.y - Coordinate.y) * (LoaderPosition.y - Coordinate.y);
+                                (LoaderPosition.y - Coordinate.y) * (LoaderPosition.y - Coordinate.y);
 
                 //  The cell is currently rendered
                 if (cellsData.IsCellOfState(Coordinate, CellsData.CellState.RENDERED))

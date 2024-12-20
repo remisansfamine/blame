@@ -1,12 +1,12 @@
 using UnityEngine;
 
-public class Cell
+public class CellData
 {
     private Vector2Int position;
 
     public Vector2Int Position => position;
 
-    public Cell(Vector2Int position)
+    public CellData(Vector2Int position)
     {
         this.position = position; 
     }

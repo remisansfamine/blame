@@ -26,7 +26,7 @@ public class GeneratorComponent : MonoBehaviour
     {
         foreach (var pair in cellsData.VirtualCells)
         {
-            foreach (VirtualCell neighbor in pair.Value.neighbors)
+            foreach (VirtualCellData neighbor in pair.Value.neighbors)
             {
                 Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
                 Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;
@@ -59,7 +59,7 @@ public class GeneratorComponent : MonoBehaviour
         //  Draw debugs
         foreach (var pair in cellsData.VirtualCells)
         {
-            foreach (VirtualCell neighbor in pair.Value.neighbors)
+            foreach (VirtualCellData neighbor in pair.Value.neighbors)
             {
                 Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
                 Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;

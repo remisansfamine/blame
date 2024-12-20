@@ -12,15 +12,14 @@ public class WorldGenerator : ScriptableObject
     public float CellScale => cellScale;
 
     [SerializeField] private Grid worldGrid = new Grid();
-
-    [SerializeField] private GameObject cellPrefab = null;
     
     [SerializeField, Range(0f, 1f)] private float spawnRate = 0.5f;
 
-    [SerializeField] public float noiseResolution = 1f;
+    [SerializeField, Min(0f)] private float noiseResolution = 1f;
 
-    [SerializeField] public int neighborhoodRange = 10;
+    [SerializeField, Min(0f)] private int neighborhoodRange = 10;
 
+    [SerializeField] private CellStructure cellStructuresTemplate;
 
     //private Dictionary<Vector2Int, GameObject> RenderedCells = new Dictionary<Vector2Int, GameObject>();
 
@@ -87,12 +86,12 @@ public class WorldGenerator : ScriptableObject
                 if (DistSqr > chunkLoader.SquaredVirtualDistance)
                     continue;
 
-                if (cellsData.IsCellOfState(currPosition, CellsData.CellState.RENDERED))
+                if (cellsData.IsCellOfState(currPosition, CellsData.CellState.LOADED))
                 {
                     //  The cell is currently rendered
                     //  Should it be unloaded
                     if (DistSqr > chunkLoader.SquaredUnloadDistance)
-                        UnloadRenderedCell(cellsData.RenderedCells, currPosition);
+                        UnloadRenderedCell(cellsData.LoadedCells, currPosition);
                     continue;
                 }
                 
@@ -101,7 +100,7 @@ public class WorldGenerator : ScriptableObject
                     //  The cell is supposed to be rendered but is not rendered yet
                     //  Should we render this cell ?
                     if (DistSqr <= chunkLoader.SquaredRenderDistance)
-                        CreateRenderedCell(cellsData.RenderedCells, cellContainer, currPosition);
+                        CreateRenderedCell(cellsData.LoadedCells, cellContainer, currPosition);
 
                     continue;
                 }
@@ -141,24 +140,27 @@ public class WorldGenerator : ScriptableObject
         }
     }
 
-    private void UnloadRenderedCell(Dictionary<Vector2Int, GameObject> renderedCells, Vector2Int cellPosition)
+    private void UnloadRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Vector2Int cellPosition)
     {
-        Destroy(renderedCells[cellPosition]);
+        Destroy(renderedCells[cellPosition].gameObject);
         renderedCells.Remove(cellPosition);
     }
 
-    private void CreateRenderedCell(Dictionary<Vector2Int, GameObject> renderedCells, Transform cellContainer, Vector2Int cellPosition)
+    private void CreateRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Transform cellContainer, Vector2Int cellPosition)
     {
         Vector3 generatedChunkPosition = FromGridSpaceToWorldSpace(cellPosition.x, cellPosition.y);
         Quaternion generatedChunkRotation = Quaternion.identity;
-        renderedCells.Add(cellPosition, GameObject.Instantiate(cellPrefab, generatedChunkPosition, generatedChunkRotation, cellContainer));
+
+        CellStructure newStructure = Instantiate(cellStructuresTemplate, generatedChunkPosition, generatedChunkRotation, cellContainer);
+        newStructure.Generate();
+        renderedCells.Add(cellPosition, newStructure);
     }
 
-    private void CreateVirtualCell(Dictionary<Vector2Int, VirtualCell> virtualCells, Vector2Int cellPosition)
+    private void CreateVirtualCell(Dictionary<Vector2Int, VirtualCellData> virtualCells, Vector2Int cellPosition)
     {
-        HashSet<VirtualCell> occupiedCellsInRange = virtualCells.Where(pair => pair.Key.SqrdDistance(cellPosition) <= neighborhoodRange * neighborhoodRange).Select(pair => pair.Value).ToHashSet();
+        HashSet<VirtualCellData> occupiedCellsInRange = virtualCells.Where(pair => pair.Key.SqrdDistance(cellPosition) <= neighborhoodRange * neighborhoodRange).Select(pair => pair.Value).ToHashSet();
 
-        VirtualCell newVirtual = new VirtualCell(cellPosition);
+        VirtualCellData newVirtual = new VirtualCellData(cellPosition);
         newVirtual.AddNeighbors(occupiedCellsInRange);
         virtualCells.Add(cellPosition, newVirtual);
     }

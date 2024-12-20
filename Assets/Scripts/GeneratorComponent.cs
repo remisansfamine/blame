@@ -1,26 +1,13 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class GeneratorComponent : MonoBehaviour
 {
     [SerializeField] private WorldGenerator worldGenerator;
-
-
-    [SerializeField] private Transform cameraTransform;
-    [SerializeField, Range(0f, 250f)] private float virtualGenerationDistance = 10f;
     [SerializeField] private Transform cellContainer = null;
 
-    [SerializeField] private ChunkLoadComponent DEBUG_ChunkLoader = null;
-    private List<ChunkLoadComponent> chunkLoaders = new List<ChunkLoadComponent>();
-
-    CellsData cellsData = new CellsData();
-
-    void Start()
-    {
-        RegisterChunkLoader(DEBUG_ChunkLoader);
-    }
+    private HashSet<ChunkLoadComponent> chunkLoaders = new HashSet<ChunkLoadComponent>();
+    private CellsData cellsData = new CellsData();
 
     private void OnDrawGizmos()
     {
@@ -31,7 +18,7 @@ public class GeneratorComponent : MonoBehaviour
                 Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
                 Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;
 
-                Gizmos.color = Color.green;
+                Gizmos.color = new Color(0, 0.4f, 0.6f, 0.35f);
                 Gizmos.DrawLine(startPos, endPos);
             }
         }
@@ -54,29 +41,15 @@ public class GeneratorComponent : MonoBehaviour
         {
             worldGenerator.UpdateCells(chunkLoader, cellsData, cellContainer);
         }
-
-
-        //  Draw debugs
-        foreach (var pair in cellsData.VirtualCells)
-        {
-            foreach (VirtualCellData neighbor in pair.Value.neighbors)
-            {
-                Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
-                Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;
-                Debug.DrawLine(startPos, endPos, Color.green);
-            }
-        }
     }
 
     public void RegisterChunkLoader(ChunkLoadComponent chunkLoader)
     {
-        if (!chunkLoaders.Contains(chunkLoader))
-            chunkLoaders.Add(chunkLoader);
+        chunkLoaders.Add(chunkLoader);
     }
 
     public void UnregisterChunkLoader(ChunkLoadComponent chunkLoader)
     {
-        if (chunkLoaders.Contains(chunkLoader))
-            chunkLoaders.Remove(chunkLoader);
+        chunkLoaders.Remove(chunkLoader);
     }
 }

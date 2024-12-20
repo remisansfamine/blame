@@ -16,6 +16,22 @@ public class ChunkLoadComponent : MonoBehaviour
     public int SquaredRenderDistance => renderDistance * renderDistance;
     public int SquaredUnloadDistance => unloadDistance * unloadDistance;
 
+    private void OnEnable()
+    {
+        if (LevelInstance.Instance)
+        {
+            LevelInstance.Instance.Generator.RegisterChunkLoader(this);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (LevelInstance.Instance)
+        {
+            LevelInstance.Instance.Generator.UnregisterChunkLoader(this);
+        }
+    }
+
     private void LateUpdate()
     {
         OldPosition = transform.position;

@@ -42,7 +42,7 @@ public class CellsData
         virtualCells.Clear();
 
         foreach (var cell in loadedCells)
-            Object.Destroy(cell.Value);
+            Object.Destroy(cell.Value.gameObject);
 
         loadedCells.Clear();
     }
@@ -56,7 +56,7 @@ public class CellsData
         {
             if (loadedCells.TryGetValue(position, out var cell))
             {
-                Object.Destroy(cell);
+                Object.Destroy(cell.gameObject);
                 loadedCells.Remove(position);
             }
         }

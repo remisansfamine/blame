@@ -21,13 +21,6 @@ public class WorldGenerator : ScriptableObject
 
     [SerializeField] private CellStructure cellStructuresTemplate;
 
-    //private Dictionary<Vector2Int, GameObject> RenderedCells = new Dictionary<Vector2Int, GameObject>();
-
-    void Generate()
-    {
-
-    }
-
     Vector2Int FromWorldSpaceToGridSpace(Vector3 WorldCoordinate)
     {
         return new Vector2Int(Mathf.CeilToInt(WorldCoordinate.x / CellScale), Mathf.CeilToInt(WorldCoordinate.z / CellScale)); 
@@ -81,16 +74,21 @@ public class WorldGenerator : ScriptableObject
                 if (cellsData.IsCellOfState(currPosition, CellsData.CellState.EMPTY))
                     continue;
 
+                //  Use float to compare distances to avoid a shift
+                Vector2 currPositionf = currPosition + Vector2.one * 0.5f;
+
                 //  Calculate square distance between current coordinate and chunk loader
-                int DistSqr = currPosition.SqrdDistance(loaderPosition);
-                if (DistSqr > chunkLoader.SquaredVirtualDistance)
+                float distSqr = Vector2.SqrMagnitude(currPositionf - loaderPosition);
+
+                //int DistSqr = currPosition.SqrdDistance(loaderPosition);
+                if (distSqr > (float)chunkLoader.SquaredVirtualDistance)
                     continue;
 
                 if (cellsData.IsCellOfState(currPosition, CellsData.CellState.LOADED))
                 {
                     //  The cell is currently rendered
                     //  Should it be unloaded
-                    if (DistSqr > chunkLoader.SquaredUnloadDistance)
+                    if (distSqr > (float)chunkLoader.SquaredUnloadDistance)
                         UnloadRenderedCell(cellsData.LoadedCells, currPosition);
                     continue;
                 }
@@ -99,7 +97,7 @@ public class WorldGenerator : ScriptableObject
                 {
                     //  The cell is supposed to be rendered but is not rendered yet
                     //  Should we render this cell ?
-                    if (DistSqr <= chunkLoader.SquaredRenderDistance)
+                    if (distSqr <= (float)chunkLoader.SquaredRenderDistance)
                         CreateRenderedCell(cellsData.LoadedCells, cellContainer, currPosition);
 
                     continue;

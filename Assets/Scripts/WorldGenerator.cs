@@ -98,7 +98,7 @@ public class WorldGenerator : ScriptableObject
                     //  The cell is supposed to be rendered but is not rendered yet
                     //  Should we render this cell ?
                     if (distSqr <= (float)chunkLoader.SquaredRenderDistance)
-                        CreateRenderedCell(cellsData.LoadedCells, cellContainer, currPosition);
+                        CreateRenderedCell(cellsData.LoadedCells, cellContainer, currPosition, cellsData.VirtualCells[currPosition]);
 
                     continue;
                 }
@@ -144,13 +144,13 @@ public class WorldGenerator : ScriptableObject
         renderedCells.Remove(cellPosition);
     }
 
-    private void CreateRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Transform cellContainer, Vector2Int cellPosition)
+    private void CreateRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Transform cellContainer, Vector2Int cellPosition, VirtualCellData cellData)
     {
         Vector3 generatedChunkPosition = FromGridSpaceToWorldSpace(cellPosition.x, cellPosition.y);
         Quaternion generatedChunkRotation = Quaternion.identity;
 
         CellStructure newStructure = Instantiate(cellStructuresTemplate, generatedChunkPosition, generatedChunkRotation, cellContainer);
-        newStructure.Generate();
+        newStructure.Generate(cellData, CellScale);
         renderedCells.Add(cellPosition, newStructure);
     }
 

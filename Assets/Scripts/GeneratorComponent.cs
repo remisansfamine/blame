@@ -11,17 +11,17 @@ public class GeneratorComponent : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        foreach (var pair in cellsData.VirtualCells)
-        {
-            foreach (VirtualCellData neighbor in pair.Value.neighbors)
-            {
-                Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
-                Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;
+        //foreach (var pair in cellsData.VirtualCells)
+        //{
+        //    foreach (VirtualCellData neighbor in pair.Value.neighbors)
+        //    {
+        //        Vector3 startPos = new Vector3(pair.Value.Position.x, 0, pair.Value.Position.y) * worldGenerator.CellScale;
+        //        Vector3 endPos = new Vector3(neighbor.Position.x, 0, neighbor.Position.y) * worldGenerator.CellScale;
 
-                Gizmos.color = new Color(0, 0.4f, 0.6f, 0.35f);
-                Gizmos.DrawLine(startPos, endPos);
-            }
-        }
+        //        Gizmos.color = new Color(0, 0.4f, 0.6f, 0.35f);
+        //        Gizmos.DrawLine(startPos, endPos);
+        //    }
+        //}
 
         Matrix4x4 oldMatrix = Gizmos.matrix;
         foreach (ChunkLoadComponent chunkLoadComponent in chunkLoaders)

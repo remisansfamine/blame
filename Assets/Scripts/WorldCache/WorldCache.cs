@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 public class WorldCache
@@ -13,6 +14,8 @@ public class WorldCache
     private HashSet<Vector2Int> emptyCells = new HashSet<Vector2Int>();
     private Dictionary<Vector2Int, VirtualCellData>  virtualCells = new Dictionary<Vector2Int, VirtualCellData>();
     private Dictionary<Vector2Int, CellStructure> loadedCells = new Dictionary<Vector2Int, CellStructure>();
+
+    public Module foundationCacheModule = null;
 
     public HashSet<Vector2Int> EmptyCells => emptyCells;
     public Dictionary<Vector2Int, VirtualCellData> VirtualCells => virtualCells;

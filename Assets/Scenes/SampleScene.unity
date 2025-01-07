@@ -571,7 +571,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 233065777d0aa294c9a4bbd2641b69c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldGenerator: {fileID: 11400000, guid: 17a399f2b01a0a6438f42f27fa946810, type: 2}
+  worldGeneratorClass: {fileID: 11400000, guid: 17a399f2b01a0a6438f42f27fa946810, type: 2}
   cellContainer: {fileID: 2074600847}
 --- !u!1001 &4244215494196242781
 PrefabInstance:

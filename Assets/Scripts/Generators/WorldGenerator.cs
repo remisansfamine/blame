@@ -21,6 +21,8 @@ public class WorldGenerator : ScriptableObject
 
     [SerializeField] protected CellStructure cellStructuresTemplate;
 
+    protected WorldCache worldCache = null;
+
     //  PROPERTIES
     public float CellScale => cellScale;
 
@@ -46,8 +48,14 @@ public class WorldGenerator : ScriptableObject
         return 0.0f;
     }
 
+    protected virtual WorldCache InstantiateWorldCache() => new WorldCache();
 
-    public void UpdateCells(ChunkLoadComponent chunkLoader, WorldCache cellsData, Transform cellContainer)
+    private void Awake()
+    {
+        worldCache = InstantiateWorldCache();    
+    }
+
+    public void UpdateCells(ChunkLoadComponent chunkLoader, Transform cellContainer)
     {
         Vector2Int loaderPosition   = FromWorldSpaceToGridSpace(chunkLoader.transform.position);
         Vector2Int oldPosition2D    = FromWorldSpaceToGridSpace(chunkLoader.OldPosition);
@@ -63,9 +71,9 @@ public class WorldGenerator : ScriptableObject
 
         //  if the distance traveled is higher than the virtual distance, clear all datas
         if (sqrMovement > chunkLoader.SquaredVirtualDistance * 4)
-            Wipe(cellsData);
+            Wipe(worldCache);
         else
-            SweepBehind(cellsData, new Rect(oldPosition2D - extent, extent * 2), newRect);
+            SweepBehind(worldCache, new Rect(oldPosition2D - extent, extent * 2), newRect);
 
         //  Loading part
         //  ------------
@@ -77,7 +85,7 @@ public class WorldGenerator : ScriptableObject
         {
             for (currPosition.y = (int)newRect.yMin; currPosition.y < (int)newRect.yMax; currPosition.y++)
             {
-                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.EMPTY))
+                if (worldCache.IsCellOfState(currPosition, WorldCache.CellState.EMPTY))
                     continue;
 
                 //  Use float to compare distances to avoid a shift
@@ -90,33 +98,33 @@ public class WorldGenerator : ScriptableObject
                 if (distSqr > (float)chunkLoader.SquaredVirtualDistance)
                     continue;
 
-                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.LOADED))
+                if (worldCache.IsCellOfState(currPosition, WorldCache.CellState.LOADED))
                 {
                     //  The cell is currently rendered
                     //  Should it be unloaded
                     if (distSqr > (float)chunkLoader.SquaredUnloadDistance)
-                        UnloadRenderedCell(cellsData.LoadedCells, currPosition);
+                        UnloadRenderedCell(worldCache.LoadedCells, currPosition);
                     continue;
                 }
                 
-                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.VIRTUAL))
+                if (worldCache.IsCellOfState(currPosition, WorldCache.CellState.VIRTUAL))
                 {
                     //  The cell is supposed to be rendered but is not rendered yet
                     //  Should we render this cell ?
                     if (distSqr <= (float)chunkLoader.SquaredRenderDistance)
-                        CreateRenderedCell(cellsData.LoadedCells, cellContainer, currPosition, cellsData.VirtualCells[currPosition]);
+                        CreateRenderedCell(worldCache.LoadedCells, cellContainer, currPosition, worldCache.VirtualCells[currPosition]);
 
                     continue;
                 }
                 //  The cell has not been registered in any state, let's check if it should be filled depending on a noise
                 if (GetNoiseValueFromChunkSpace(currPosition.x, currPosition.y) >= 1f - spawnRate) 
                 {
-                    CreateVirtualCell(cellsData.VirtualCells, currPosition);
+                    CreateVirtualCell(worldCache.VirtualCells, currPosition);
                     continue;
                 }
 
                 //  Mark this cell as empty as it has no state yet and was not filled by the noise
-                cellsData.EmptyCells.Add(currPosition);
+                worldCache.EmptyCells.Add(currPosition);
             }
         }
     }

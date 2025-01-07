@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "FoundationWorldGenerator", menuName = "Generators/FoundationWorldGenerator")]
 public class FoundationWorldGenerators : WorldGenerator
 {
-
+    protected override WorldCache InstantiateWorldCache() => new FoundationWorldCache();
     protected override VirtualCellData InstantiateVirtualCell(Vector2Int cellPosition) => new FoundationVirtualCellData(cellPosition);
 
 

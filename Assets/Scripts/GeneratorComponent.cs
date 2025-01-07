@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static WorldCache;
 
 public class GeneratorComponent : MonoBehaviour
 {
-    [SerializeField] private WorldGenerator worldGenerator;
+    [SerializeField] private WorldGenerator worldGeneratorClass;
+    private WorldGenerator worldGeneratorInstance;
+
     [SerializeField] private Transform cellContainer = null;
 
     private HashSet<ChunkLoadComponent> chunkLoaders = new HashSet<ChunkLoadComponent>();
-    private WorldCache cellsData = new WorldCache();
 
     private void OnDrawGizmos()
     {
@@ -28,18 +30,22 @@ public class GeneratorComponent : MonoBehaviour
         {
             Gizmos.matrix = Matrix4x4.TRS(chunkLoadComponent.transform.position, Quaternion.identity, new Vector3(1, .01f, 1));
             Gizmos.color = new Color(.45f, .3f, .3f, .35f);
-            Gizmos.DrawSphere(Vector3.zero, chunkLoadComponent.VirtualDistance * worldGenerator.CellScale);
+            Gizmos.DrawSphere(Vector3.zero, chunkLoadComponent.VirtualDistance * worldGeneratorInstance.CellScale);
             Gizmos.color = new Color(.0f, 0.95f, .70f, .35f);
-            Gizmos.DrawSphere(Vector3.zero, chunkLoadComponent.RenderDistance * worldGenerator.CellScale);
+            Gizmos.DrawSphere(Vector3.zero, chunkLoadComponent.RenderDistance * worldGeneratorInstance.CellScale);
         }
         Gizmos.matrix = oldMatrix;
+    }
+    private void Start()
+    {
+        worldGeneratorInstance = Instantiate(worldGeneratorClass);
     }
 
     void Update()
     {
         foreach (ChunkLoadComponent chunkLoader in chunkLoaders)
         {
-            worldGenerator.UpdateCells(chunkLoader, cellsData, cellContainer);
+            worldGeneratorInstance.UpdateCells(chunkLoader, cellContainer);
         }
     }
 

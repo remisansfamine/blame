@@ -7,7 +7,7 @@ public class FoundationVirtualCellData : VirtualCellData
 {
     private Bounds[] bounds;
 
-    private Vector3 dimensions = new Vector3(1, 10, 1);
+    private Vector3 dimensions = new Vector3(1, 20, 1);
 
     public Bounds[] Bounds => bounds;
 

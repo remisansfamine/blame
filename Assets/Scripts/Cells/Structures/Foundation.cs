@@ -1,5 +1,4 @@
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -11,14 +10,12 @@ public class Foundation : CellStructure
 
     private FoundationVirtualCellData virtualCellData;
 
-    //private Bounds[] bounds;
 
     public override void Generate(VirtualCellData data, float cellScale)
     {
         virtualCellData = (FoundationVirtualCellData)data;
         Assert.IsNotNull(virtualCellData, "FATAL: Wrong VirtualCellData subclass type");
 
-        //DetermineBottomAndTopHeights();
         GenerateShellMesh();
 
         foreach (FoundationVirtualCellData neighbor in virtualCellData.neighbors)
@@ -61,43 +58,58 @@ public class Foundation : CellStructure
         return result;
     }
 
-    //private void DetermineBottomAndTopHeights()
-    //{
-    //    const float TOP_HEIGHT_SEED = 1987.568f;
-    //    const float BOT_HEIGHT_SEED = -7549.985f;
-
-    //    float topHeight = (int)(Noise(1, TOP_HEIGHT_SEED) * 10) / 10f;
-    //    float botHeight = (int)(Noise(1, BOT_HEIGHT_SEED) * 10) / 10f;
-        
-    //    if (topHeight + botHeight > 1f)
-    //    {
-    //        bounds = new[] {
-    //            new Bounds(Vector3.zero, maxDimensions)
-    //        };
-    //        return;
-    //    }
-    //    Vector3 bottomDimensions = maxDimensions;
-    //    bottomDimensions.y *= botHeight;
-
-    //    Vector3 topDimensions = maxDimensions;
-    //    topDimensions.y *= topHeight;
-
-    //    bounds = new[] {
-    //        new Bounds(Vector3.up * (-maxDimensions.y + bottomDimensions.y) * 0.5f , bottomDimensions),
-    //        new Bounds(Vector3.up * (maxDimensions.y - topDimensions.y) * 0.5f , topDimensions)
-    //    };
-    //}
-
     private void GenerateShellMesh()
     {
         foreach (Bounds bound in virtualCellData.Bounds)
         {
-            Mesh cubeMesh = bound.CreateCubeMeshFromBounds();
-            ShapeRenderer shapeRenderer = Instantiate(shapeRendererTemplate, transform);
-            shapeRenderer.Filter.mesh = cubeMesh; 
+            GenerateFromBound(bound);
+
+            //Mesh cubeMesh = bound.CreateCubeMeshFromBounds();
+            //ShapeRenderer shapeRenderer = Instantiate(shapeRendererTemplate, transform);
+            //shapeRenderer.Filter.mesh = cubeMesh;
         }
     }
 
+
+    private void GenerateFromBound(Bounds bound)
+    {
+        //Vector3 scale = new Vector3(1f / bound.size.x, 1f / bound.size.y, 1f / bound.size.z);
+
+        for (float y = -bound.extents.y; y < bound.extents.y; y++)
+        {
+            for (float x = -bound.extents.x; x < bound.extents.x; x++)
+            {
+                float xPos = x + 0.5f;
+                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                go.transform.localPosition = new Vector3(xPos, y, bound.extents.z) + bound.center;
+            }
+
+            for (float x = -bound.extents.x; x < bound.extents.x; x++)
+            {
+                float xPos = x + 0.5f;
+                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                go.transform.localPosition = new Vector3(xPos, y, -bound.extents.z) + bound.center;
+                go.transform.forward = Vector3.back;
+            }
+
+            for (float z = -bound.extents.z; z < bound.extents.z; z++)
+            {
+                float zPos = z + 0.5f;
+                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                go.transform.localPosition = new Vector3(bound.extents.x, y, zPos) + bound.center;
+                go.transform.forward = Vector3.right;
+            }
+
+
+            for (float z = -bound.extents.z; z < bound.extents.z; z++)
+            {
+                float zPos = z + 0.5f;
+                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                go.transform.localPosition = new Vector3(-bound.extents.x, y, zPos) + bound.center;
+                go.transform.forward = Vector3.left;
+            }
+        }
+    }
 
     private void GenerateBridgeMesh(Vector2 start, Vector2 end, float height)
     { 
@@ -154,15 +166,15 @@ public class Foundation : CellStructure
         Gizmos.DrawWireCube(transform.position + offset, dimensions);
     }
 
-    //private void OnDrawGizmos()
-    //{
-    //    if (bounds == null)
-    //        return;
+    private void OnDrawGizmos()
+    {
+        if (virtualCellData.Bounds == null)
+            return;
 
-    //    foreach (Bounds bound in bounds)
-    //    {
-    //        DrawShape(bound.center, bound.size);
-    //    }
-    //}
+        foreach (Bounds bound in virtualCellData.Bounds)
+        {
+            DrawShape(bound.center, bound.size);
+        }
+    }
 
 }

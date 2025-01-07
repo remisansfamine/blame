@@ -571,7 +571,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 233065777d0aa294c9a4bbd2641b69c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldGenerator: {fileID: 11400000, guid: d3e6fd636a236ed428f2c18f4d20427a, type: 2}
+  worldGenerator: {fileID: 11400000, guid: 17a399f2b01a0a6438f42f27fa946810, type: 2}
   cellContainer: {fileID: 2074600847}
 --- !u!1001 &4244215494196242781
 PrefabInstance:
@@ -624,6 +624,18 @@ PrefabInstance:
     - target: {fileID: 4799052099288477484, guid: 7682e4a7449c38849942c607d632b6a5, type: 3}
       propertyPath: m_Name
       value: ChunkLoader
+      objectReference: {fileID: 0}
+    - target: {fileID: 6242265881682307464, guid: 7682e4a7449c38849942c607d632b6a5, type: 3}
+      propertyPath: renderDistance
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 6242265881682307464, guid: 7682e4a7449c38849942c607d632b6a5, type: 3}
+      propertyPath: unloadDistance
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 6242265881682307464, guid: 7682e4a7449c38849942c607d632b6a5, type: 3}
+      propertyPath: virtualDistance
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

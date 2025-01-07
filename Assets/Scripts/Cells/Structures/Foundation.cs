@@ -1,6 +1,7 @@
 using System;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 public class Foundation : CellStructure
 {
@@ -8,18 +9,19 @@ public class Foundation : CellStructure
     [SerializeField] private ShapeRenderer bridgeRendererTemplate;
     [SerializeField] private Vector3 maxDimensions = Vector3.one;
 
-    private VirtualCellData virtualCellData;
+    private FoundationVirtualCellData virtualCellData;
 
-    private Bounds[] bounds;
+    //private Bounds[] bounds;
 
     public override void Generate(VirtualCellData data, float cellScale)
     {
-        virtualCellData = data;
+        virtualCellData = (FoundationVirtualCellData)data;
+        Assert.IsNotNull(virtualCellData, "FATAL: Wrong VirtualCellData subclass type");
 
-        DetermineBottomAndTopHeights();
+        //DetermineBottomAndTopHeights();
         GenerateShellMesh();
 
-        foreach (VirtualCellData neighbor in data.neighbors)
+        foreach (FoundationVirtualCellData neighbor in virtualCellData.neighbors)
         {
             bool[] bridges = GetBridgesForEachFloor(data, neighbor);
 
@@ -59,36 +61,36 @@ public class Foundation : CellStructure
         return result;
     }
 
-    private void DetermineBottomAndTopHeights()
-    {
-        const float TOP_HEIGHT_SEED = 1987.568f;
-        const float BOT_HEIGHT_SEED = -7549.985f;
+    //private void DetermineBottomAndTopHeights()
+    //{
+    //    const float TOP_HEIGHT_SEED = 1987.568f;
+    //    const float BOT_HEIGHT_SEED = -7549.985f;
 
-        float topHeight = (int)(Noise(1, TOP_HEIGHT_SEED) * 10) / 10f;
-        float botHeight = (int)(Noise(1, BOT_HEIGHT_SEED) * 10) / 10f;
+    //    float topHeight = (int)(Noise(1, TOP_HEIGHT_SEED) * 10) / 10f;
+    //    float botHeight = (int)(Noise(1, BOT_HEIGHT_SEED) * 10) / 10f;
         
-        if (topHeight + botHeight > 1f)
-        {
-            bounds = new[] {
-                new Bounds(Vector3.zero, maxDimensions)
-            };
-            return;
-        }
-        Vector3 bottomDimensions = maxDimensions;
-        bottomDimensions.y *= botHeight;
+    //    if (topHeight + botHeight > 1f)
+    //    {
+    //        bounds = new[] {
+    //            new Bounds(Vector3.zero, maxDimensions)
+    //        };
+    //        return;
+    //    }
+    //    Vector3 bottomDimensions = maxDimensions;
+    //    bottomDimensions.y *= botHeight;
 
-        Vector3 topDimensions = maxDimensions;
-        topDimensions.y *= topHeight;
+    //    Vector3 topDimensions = maxDimensions;
+    //    topDimensions.y *= topHeight;
 
-        bounds = new[] {
-            new Bounds(Vector3.up * (-maxDimensions.y + bottomDimensions.y) * 0.5f , bottomDimensions),
-            new Bounds(Vector3.up * (maxDimensions.y - topDimensions.y) * 0.5f , topDimensions)
-        };
-    }
+    //    bounds = new[] {
+    //        new Bounds(Vector3.up * (-maxDimensions.y + bottomDimensions.y) * 0.5f , bottomDimensions),
+    //        new Bounds(Vector3.up * (maxDimensions.y - topDimensions.y) * 0.5f , topDimensions)
+    //    };
+    //}
 
     private void GenerateShellMesh()
     {
-        foreach (Bounds bound in bounds)
+        foreach (Bounds bound in virtualCellData.Bounds)
         {
             Mesh cubeMesh = bound.CreateCubeMeshFromBounds();
             ShapeRenderer shapeRenderer = Instantiate(shapeRendererTemplate, transform);

@@ -6,32 +6,36 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "WorldGenerator", menuName = "Generators/WorldGenerator")]
 public class WorldGenerator : ScriptableObject
 {
-    [SerializeField] private Vector2 offset;
+    //  FIELDS
+    [SerializeField] protected Vector2 offset;
 
-    [SerializeField] private float cellScale = 1f;
+    [SerializeField] protected float cellScale = 1f;
+
+    [SerializeField] protected Grid worldGrid = new Grid();
+    
+    [SerializeField, Range(0f, 1f)] protected float spawnRate = 0.5f;
+
+    [SerializeField, Min(0f)] protected float noiseResolution = 1f;
+
+    [SerializeField, Min(0f)] protected int neighborhoodRange = 10;
+
+    [SerializeField] protected CellStructure cellStructuresTemplate;
+
+    //  PROPERTIES
     public float CellScale => cellScale;
 
-    [SerializeField] private Grid worldGrid = new Grid();
-    
-    [SerializeField, Range(0f, 1f)] private float spawnRate = 0.5f;
-
-    [SerializeField, Min(0f)] private float noiseResolution = 1f;
-
-    [SerializeField, Min(0f)] private int neighborhoodRange = 10;
-
-    [SerializeField] private CellStructure cellStructuresTemplate;
-
-    Vector2Int FromWorldSpaceToGridSpace(Vector3 WorldCoordinate)
+    //  METHODS
+    protected Vector2Int FromWorldSpaceToGridSpace(Vector3 WorldCoordinate)
     {
         return new Vector2Int(Mathf.CeilToInt(WorldCoordinate.x / CellScale), Mathf.CeilToInt(WorldCoordinate.z / CellScale)); 
     }
 
-    Vector3 FromGridSpaceToWorldSpace(int x, int y)
+    protected Vector3 FromGridSpaceToWorldSpace(int x, int y)
     {
         return new Vector3(x * CellScale, 0f, y * CellScale);
     }
 
-    float GetNoiseValueFromChunkSpace(float x, float y, float seed = 0)
+    protected float GetNoiseValueFromChunkSpace(float x, float y, float seed = 0)
     {
         float noiseScale = 1f / noiseResolution;
         return Mathf.PerlinNoise(seed + x * noiseScale + offset.x, seed + y * noiseScale + offset.y);
@@ -138,13 +142,13 @@ public class WorldGenerator : ScriptableObject
         }
     }
 
-    private void UnloadRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Vector2Int cellPosition)
+    protected virtual void UnloadRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Vector2Int cellPosition)
     {
         Destroy(renderedCells[cellPosition].gameObject);
         renderedCells.Remove(cellPosition);
     }
 
-    private void CreateRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Transform cellContainer, Vector2Int cellPosition, VirtualCellData cellData)
+    protected virtual void CreateRenderedCell(Dictionary<Vector2Int, CellStructure> renderedCells, Transform cellContainer, Vector2Int cellPosition, VirtualCellData cellData)
     {
         Vector3 generatedChunkPosition = FromGridSpaceToWorldSpace(cellPosition.x, cellPosition.y);
         Quaternion generatedChunkRotation = Quaternion.identity;
@@ -154,13 +158,13 @@ public class WorldGenerator : ScriptableObject
         renderedCells.Add(cellPosition, newStructure);
     }
 
-    private void CreateVirtualCell(Dictionary<Vector2Int, VirtualCellData> virtualCells, Vector2Int cellPosition)
-    {
-        HashSet<VirtualCellData> occupiedCellsInRange = virtualCells.Where(pair => pair.Key.SqrdDistance(cellPosition) <= neighborhoodRange * neighborhoodRange).Select(pair => pair.Value).ToHashSet();
+    protected virtual VirtualCellData InstantiateVirtualCell(Vector2Int cellPosition) => new VirtualCellData(cellPosition);
 
-        VirtualCellData newVirtual = new VirtualCellData(cellPosition);
+    protected virtual VirtualCellData CreateVirtualCell(Dictionary<Vector2Int, VirtualCellData> virtualCells, Vector2Int cellPosition)
+    {
+        VirtualCellData newVirtual = InstantiateVirtualCell(cellPosition);
         newVirtual.PreGenerate();
-        newVirtual.AddNeighbors(occupiedCellsInRange);
         virtualCells.Add(cellPosition, newVirtual);
+        return newVirtual;
     }
 }

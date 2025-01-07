@@ -9,7 +9,9 @@ public class VirtualCellData : CellData
     public VirtualCellData(Vector2Int position) : base(position)
     { }
 
-    public void AddNeighbors(HashSet<VirtualCellData> newNeighbors)
+    public virtual void PreGenerate() { }
+    
+    public virtual void AddNeighbors(HashSet<VirtualCellData> newNeighbors)
     {
         neighbors.AddRange(newNeighbors);
 

@@ -43,7 +43,7 @@ public class WorldGenerator : ScriptableObject
     }
 
 
-    public void UpdateCells(ChunkLoadComponent chunkLoader, CellsData cellsData, Transform cellContainer)
+    public void UpdateCells(ChunkLoadComponent chunkLoader, WorldCache cellsData, Transform cellContainer)
     {
         Vector2Int loaderPosition   = FromWorldSpaceToGridSpace(chunkLoader.transform.position);
         Vector2Int oldPosition2D    = FromWorldSpaceToGridSpace(chunkLoader.OldPosition);
@@ -71,7 +71,7 @@ public class WorldGenerator : ScriptableObject
         {
             for (currPosition.y = (int)newRect.yMin; currPosition.y < (int)newRect.yMax; currPosition.y++)
             {
-                if (cellsData.IsCellOfState(currPosition, CellsData.CellState.EMPTY))
+                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.EMPTY))
                     continue;
 
                 //  Use float to compare distances to avoid a shift
@@ -84,7 +84,7 @@ public class WorldGenerator : ScriptableObject
                 if (distSqr > (float)chunkLoader.SquaredVirtualDistance)
                     continue;
 
-                if (cellsData.IsCellOfState(currPosition, CellsData.CellState.LOADED))
+                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.LOADED))
                 {
                     //  The cell is currently rendered
                     //  Should it be unloaded
@@ -93,7 +93,7 @@ public class WorldGenerator : ScriptableObject
                     continue;
                 }
                 
-                if (cellsData.IsCellOfState(currPosition, CellsData.CellState.VIRTUAL))
+                if (cellsData.IsCellOfState(currPosition, WorldCache.CellState.VIRTUAL))
                 {
                     //  The cell is supposed to be rendered but is not rendered yet
                     //  Should we render this cell ?
@@ -115,14 +115,14 @@ public class WorldGenerator : ScriptableObject
         }
     }
 
-    private static void Wipe(CellsData cellsData)
+    private static void Wipe(WorldCache cellsData)
     {
         cellsData.ClearAll();
     }
 
     
     //  Sweep all cells that were in the previous area but not in the new area
-    private static void SweepBehind(CellsData cellsData, Rect previousArea, Rect newArea, bool drawDebug = false)
+    private static void SweepBehind(WorldCache cellsData, Rect previousArea, Rect newArea, bool drawDebug = false)
     {
         Rect[] areaToClear = previousArea.Subtract(newArea);
 
@@ -159,6 +159,7 @@ public class WorldGenerator : ScriptableObject
         HashSet<VirtualCellData> occupiedCellsInRange = virtualCells.Where(pair => pair.Key.SqrdDistance(cellPosition) <= neighborhoodRange * neighborhoodRange).Select(pair => pair.Value).ToHashSet();
 
         VirtualCellData newVirtual = new VirtualCellData(cellPosition);
+        newVirtual.PreGenerate();
         newVirtual.AddNeighbors(occupiedCellsInRange);
         virtualCells.Add(cellPosition, newVirtual);
     }

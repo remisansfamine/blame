@@ -7,7 +7,7 @@ public class GeneratorComponent : MonoBehaviour
     [SerializeField] private Transform cellContainer = null;
 
     private HashSet<ChunkLoadComponent> chunkLoaders = new HashSet<ChunkLoadComponent>();
-    private CellsData cellsData = new CellsData();
+    private WorldCache cellsData = new WorldCache();
 
     private void OnDrawGizmos()
     {

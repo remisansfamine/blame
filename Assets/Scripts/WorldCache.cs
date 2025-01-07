@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CellsData
+public class WorldCache
 {
     public enum CellState
     {

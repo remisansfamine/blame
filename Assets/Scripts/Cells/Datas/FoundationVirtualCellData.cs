@@ -7,6 +7,7 @@ public class FoundationVirtualCellData : VirtualCellData
 {
     private Bounds[] bounds;
 
+    //  TODO : to change later
     private Vector3 dimensions = new Vector3(1, 20, 1);
 
     public Bounds[] Bounds => bounds;
@@ -82,4 +83,9 @@ public class FoundationVirtualCellData : VirtualCellData
 
         return false;
     }
+
+
+
+    //  TODO : to change later
+    public Rect GetCellLocalRect() => new Rect(Vector2.zero, Vector2.one);
 }

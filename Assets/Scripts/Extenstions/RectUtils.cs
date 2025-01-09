@@ -4,6 +4,12 @@ using UnityEngine;
 
 public static class RectExtensions
 {
+    public static Vector2 ClampPosition(this Rect self, Vector2 position) => new Vector2(
+            Mathf.Clamp(position.x, self.xMin, self.xMax), 
+            Mathf.Clamp(position.y, self.yMin, self.yMax)
+    );
+
+
     public static Rect[] Subtract(this Rect self, Rect other)
     {
         // If the two rectangles don't overlap, return the original rectangle

@@ -21,6 +21,9 @@ public class Foundation : CellStructure
 
         GenerateShellMesh();
 
+        Vector2 selfCenter = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
+        Rect selfRect = new Rect(selfCenter - 0.5f * Vector2.one, Vector2.one);
+
         int floorCount = 10;
         for (int i = 0; i< floorCount; i++)
         {
@@ -31,10 +34,10 @@ public class Foundation : CellStructure
                 {
                     if (neighbor.IsValidHeight(height) && IsBridgeAtFloor(virtualCellData, neighbor, i))
                     {
-                        Vector2 start = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
-                        Vector2 end = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
+                        Vector2 neighborCenter = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
 
-                        GenerateBridgeMesh(start, end, height);
+                        Rect neighborRect = new Rect(neighborCenter - 0.5f * Vector2.one, Vector2.one);
+                        GenerateBridgeMesh(selfRect.ClampPosition(neighborCenter), neighborRect.ClampPosition(selfCenter), height);
                     }
                 }
             }
@@ -179,20 +182,26 @@ public class Foundation : CellStructure
     }
 
     private void GenerateBridgeMesh(Vector2 start, Vector2 end, float height)
-    { 
-        Vector3 direction = new Vector3(end.x - start.x, 0f, end.y - start.y);
+    {
+        Vector2 direction2D = end - start;
+        float length = direction2D.magnitude;
+
+        direction2D.Normalize();
 
         // Define vertices
         Vector3[] vertices = new Vector3[4];
         float width = .5f; // Width of the bridge
-        Vector3 right = Vector3.Cross(direction.normalized, Vector3.up) * width * 0.5f;
+
+        Vector3 start3D = new Vector3(start.x, 0f, start.y);
+        Vector3 direction = new Vector3(direction2D.x, 0f, direction2D.y);
+        Vector3 right = Vector3.Cross(direction, Vector3.up) * width * 0.5f;
 
         // Create a quad (4 vertices)
-        Vector3 origin = Vector3.up * height;
+        Vector3 origin = Vector3.up * height + (start3D - transform.position);
         vertices[0] = origin - right;          
         vertices[1] = origin + right;
-        vertices[2] = origin + direction * 0.5f - right;
-        vertices[3] = origin + direction * 0.5f + right;
+        vertices[2] = origin + direction * length * 0.5f - right;
+        vertices[3] = origin + direction * length * 0.5f + right;
 
         // Define triangles
         int[] triangles = new int[6]

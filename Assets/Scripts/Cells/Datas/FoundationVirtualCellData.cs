@@ -17,6 +17,14 @@ public class FoundationVirtualCellData : VirtualCellData
     {
     }
 
+    public virtual void AddNeighbor(VirtualCellData newNeighbor)
+    {
+        neighbors.Add(newNeighbor);
+
+        FoundationVirtualCellData foundationVirtualCellData = newNeighbor as FoundationVirtualCellData;
+        foundationVirtualCellData.neighbors.Add(this);
+    }
+
     public virtual void AddNeighbors(HashSet<VirtualCellData> newNeighbors)
     {
         neighbors.AddRange(newNeighbors);

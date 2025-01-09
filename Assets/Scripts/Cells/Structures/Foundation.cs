@@ -1,6 +1,9 @@
+//#define USE_SINGLE_GO
+
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
+using System.Collections.Generic;
 
 public class Foundation : CellStructure
 {
@@ -75,19 +78,29 @@ public class Foundation : CellStructure
     {
         //Vector3 scale = new Vector3(1f / bound.size.x, 1f / bound.size.y, 1f / bound.size.z);
 
+        //CombineInstance[] combineInstance = new CombineInstance[(int)bound.size.y * (int)(bound.size.x * bound.size.z) * 2 ];
+
+
+    #if !USE_SINGLE_GO
+        List<CombineInstance> combineInstances = new List<CombineInstance>();
+    #endif
+
+
         for (float y = -bound.extents.y; y < bound.extents.y; y++)
         {
+
+    #if USE_SINGLE_GO
             for (float x = -bound.extents.x; x < bound.extents.x; x++)
             {
                 float xPos = x + 0.5f;
-                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
                 go.transform.localPosition = new Vector3(xPos, y, bound.extents.z) + bound.center;
             }
 
             for (float x = -bound.extents.x; x < bound.extents.x; x++)
             {
                 float xPos = x + 0.5f;
-                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
                 go.transform.localPosition = new Vector3(xPos, y, -bound.extents.z) + bound.center;
                 go.transform.forward = Vector3.back;
             }
@@ -95,7 +108,7 @@ public class Foundation : CellStructure
             for (float z = -bound.extents.z; z < bound.extents.z; z++)
             {
                 float zPos = z + 0.5f;
-                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
                 go.transform.localPosition = new Vector3(bound.extents.x, y, zPos) + bound.center;
                 go.transform.forward = Vector3.right;
             }
@@ -104,11 +117,84 @@ public class Foundation : CellStructure
             for (float z = -bound.extents.z; z < bound.extents.z; z++)
             {
                 float zPos = z + 0.5f;
-                GameObject go = Instantiate(assetsPack.Walls[0], transform);
+                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
                 go.transform.localPosition = new Vector3(-bound.extents.x, y, zPos) + bound.center;
                 go.transform.forward = Vector3.left;
             }
+    #else
+
+            for (float x = -bound.extents.x; x < bound.extents.x; x++)
+            {
+                float xPos = x + 0.5f;
+
+                CombineInstance instance = new CombineInstance();
+                instance.mesh = assetsPack.Walls[0];
+
+                Vector3 position = new Vector3(xPos, y + 0.5f, bound.extents.z - 0.025f) + bound.center;
+                Quaternion rotation = Quaternion.identity;
+                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+
+                instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                combineInstances.Add(instance);
+            }
+
+            for (float x = -bound.extents.x; x < bound.extents.x; x++)
+            {
+                float xPos = x + 0.5f;
+
+                CombineInstance instance = new CombineInstance();
+                instance.mesh = assetsPack.Walls[0];
+
+                Vector3 position = new Vector3(xPos, y + 0.5f, -bound.extents.z + 0.025f) + bound.center;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.back);
+                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+
+                instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                combineInstances.Add(instance);
+            }
+
+            for (float z = -bound.extents.z; z < bound.extents.z; z++)
+            {
+                float zPos = z + 0.5f;
+
+                CombineInstance instance = new CombineInstance();
+                instance.mesh = assetsPack.Walls[0];
+
+                Vector3 position = new Vector3(bound.extents.x - 0.025f, y + 0.5f, zPos) + bound.center;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
+                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+
+                instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                combineInstances.Add(instance);
+            }
+
+
+            for (float z = -bound.extents.z; z < bound.extents.z; z++)
+            {
+                float zPos = z + 0.5f;
+
+                CombineInstance instance = new CombineInstance();
+                instance.mesh = assetsPack.Walls[0];
+
+                Vector3 position = new Vector3(-bound.extents.x + 0.025f, y + 0.5f, zPos) + bound.center;
+                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.left);
+                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+
+                instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                combineInstances.Add(instance);
+            }
+    #endif
+
         }
+
+
+    #if !USE_SINGLE_GO
+        ShapeRenderer render = Instantiate(shapeRendererTemplate, transform);
+            Mesh mergedMesh = new Mesh();
+            mergedMesh.CombineMeshes(combineInstances.ToArray());
+            render.Filter.sharedMesh = mergedMesh;
+            render.Filter.mesh.Optimize();
+    #endif
     }
 
     private void GenerateBridgeMesh(Vector2 start, Vector2 end, float height)

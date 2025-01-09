@@ -8,11 +8,13 @@ public class FoundationVirtualCellData : VirtualCellData
     private Bounds[] bounds;
 
     //  TODO : to change later
-    private Vector3 dimensions = new Vector3(1, 20, 1);
+    private Vector3 dimensions = new Vector3(5, 50, 5);
 
     public Bounds[] Bounds => bounds;
 
     public HashSet<VirtualCellData> neighbors = new HashSet<VirtualCellData>();
+
+    public Vector3 Dimensions => dimensions;
 
     public FoundationVirtualCellData(Vector2Int position) : base(position)
     {

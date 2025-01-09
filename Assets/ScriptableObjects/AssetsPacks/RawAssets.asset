@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Doors: []
   Walls:
-  - {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  - {fileID: 4754861833707048916, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
+  - {fileID: 7808194105375981740, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
+  - {fileID: 7212675024025232905, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
+  - {fileID: 8765693087348333112, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
+  - {fileID: 3361998696948207947, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
+  - {fileID: -2704095710818051613, guid: 2bc42058f1b718041931ad7fe3ad4454, type: 3}
   Floors: []
   Ceilings: []
   WallsGo:

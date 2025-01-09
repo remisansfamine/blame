@@ -9,7 +9,7 @@ public class Foundation : CellStructure
 {
     [SerializeField] private ShapeRenderer shapeRendererTemplate;
     [SerializeField] private ShapeRenderer bridgeRendererTemplate;
-    [SerializeField] private Vector3 maxDimensions = Vector3.one;
+    [SerializeField] private Material[] materials;
 
     private FoundationVirtualCellData virtualCellData;
 
@@ -24,10 +24,10 @@ public class Foundation : CellStructure
         Vector2 selfCenter = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
         Rect selfRect = new Rect(selfCenter - 0.5f * Vector2.one, Vector2.one);
 
-        int floorCount = 10;
+        int floorCount = 50;
         for (int i = 0; i< floorCount; i++)
         {
-            float height = -maxDimensions.y * 0.5f + maxDimensions.y * (i / (float)floorCount);
+            float height = -virtualCellData.Dimensions.y * 0.5f + virtualCellData.Dimensions.y * (i / (float)floorCount);
             if (virtualCellData.IsValidHeight(height))
             {
                 foreach (FoundationVirtualCellData neighbor in virtualCellData.neighbors)
@@ -37,15 +37,14 @@ public class Foundation : CellStructure
                         Vector2 neighborCenter = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
 
                         Rect neighborRect = new Rect(neighborCenter - 0.5f * Vector2.one, Vector2.one);
-
                         Vector2 direction = (neighborCenter - selfCenter).normalized;
                         GenerateBridgeMesh(selfRect.PointOnSurface(direction), neighborRect.PointOnSurface(-direction), height);
-                        //GenerateBridgeMesh(selfRect.ClampPosition(neighborCenter), neighborRect.ClampPosition(selfCenter), height);
                     }
                 }
             }
         }
     }
+
 
     private bool IsBridgeAtFloor(VirtualCellData selfVirtualCell, VirtualCellData neighborVirtualCell, int floor, float bridgeSpawnRate = 0.25f)
     {
@@ -65,123 +64,108 @@ public class Foundation : CellStructure
     }
 
 
-    private void GenerateFromBound(Bounds bound)
+    private Mesh GetWallFromInfo(Vector3 localPosition,int direction)
+    {
+        int hash = HashCode.Combine(localPosition.x, localPosition.y, localPosition.z, direction);
+        int index = Mathf.Abs(hash) % assetsPack.Walls.Length;
+        return assetsPack.Walls[index];
+    }
+
+private void GenerateFromBound(Bounds bound)
     {
 
-    #if !USE_SINGLE_GO
-        List<CombineInstance> combineInstances = new List<CombineInstance>();
-    #endif
+        List<List<CombineInstance>> combineInstances = new List<List<CombineInstance>>();
 
+        for (int i = 0; i < assetsPack.Walls.Length; i++)
+        {
+            if (combineInstances.Count < assetsPack.Walls[i].subMeshCount)
+                combineInstances.Add(new List<CombineInstance>());
+        }
+
+        Vector3 scale = new Vector3(1f, 1f, 0.05f);
 
         for (float y = -bound.extents.y; y < bound.extents.y; y++)
         {
-
-    #if USE_SINGLE_GO
-            for (float x = -bound.extents.x; x < bound.extents.x; x++)
-            {
-                float xPos = x + 0.5f;
-                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
-                go.transform.localPosition = new Vector3(xPos, y, bound.extents.z) + bound.center;
-            }
-
-            for (float x = -bound.extents.x; x < bound.extents.x; x++)
-            {
-                float xPos = x + 0.5f;
-                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
-                go.transform.localPosition = new Vector3(xPos, y, -bound.extents.z) + bound.center;
-                go.transform.forward = Vector3.back;
-            }
-
-            for (float z = -bound.extents.z; z < bound.extents.z; z++)
-            {
-                float zPos = z + 0.5f;
-                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
-                go.transform.localPosition = new Vector3(bound.extents.x, y, zPos) + bound.center;
-                go.transform.forward = Vector3.right;
-            }
-
-
-            for (float z = -bound.extents.z; z < bound.extents.z; z++)
-            {
-                float zPos = z + 0.5f;
-                GameObject go = Instantiate(assetsPack.WallsGo[0], transform);
-                go.transform.localPosition = new Vector3(-bound.extents.x, y, zPos) + bound.center;
-                go.transform.forward = Vector3.left;
-            }
-    #else
-
             for (float x = -bound.extents.x; x < bound.extents.x; x++)
             {
                 float xPos = x + 0.5f;
 
-                CombineInstance instance = new CombineInstance();
-                instance.mesh = assetsPack.Walls[0];
+                {
+                    Vector3 position = new Vector3(xPos, y, bound.extents.z - 0.025f) + bound.center;
+                    Quaternion rotation = Quaternion.identity;
 
-                Vector3 position = new Vector3(xPos, y + 0.5f, bound.extents.z - 0.025f) + bound.center;
-                Quaternion rotation = Quaternion.identity;
-                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+                    CombineInstance instance = new CombineInstance();
+                    instance.mesh = GetWallFromInfo(position, 0);
+                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
 
-                instance.transform = Matrix4x4.TRS(position, rotation, scale);
-                combineInstances.Add(instance);
-            }
+                    for (int i = 0; i < instance.mesh.subMeshCount; i++)
+                    {
+                        instance.subMeshIndex = i;
+                        combineInstances[i].Add(instance);
+                    }
+                }
 
-            for (float x = -bound.extents.x; x < bound.extents.x; x++)
-            {
-                float xPos = x + 0.5f;
+                {
+                    Vector3 position = new Vector3(xPos, y, -bound.extents.z + 0.025f) + bound.center;
+                    Quaternion rotation = Quaternion.AngleAxis(180f, Vector3.up);
 
-                CombineInstance instance = new CombineInstance();
-                instance.mesh = assetsPack.Walls[0];
+                    CombineInstance instance = new CombineInstance();
+                    instance.mesh = GetWallFromInfo(position, 1);
+                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
 
-                Vector3 position = new Vector3(xPos, y + 0.5f, -bound.extents.z + 0.025f) + bound.center;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.back);
-                Vector3 scale = new Vector3(1f, 1f, 0.05f);
-
-                instance.transform = Matrix4x4.TRS(position, rotation, scale);
-                combineInstances.Add(instance);
+                    for (int i = 0; i < instance.mesh.subMeshCount; i++)
+                    {
+                        instance.subMeshIndex = i;
+                        combineInstances[i].Add(instance);
+                    }
+                }
             }
 
             for (float z = -bound.extents.z; z < bound.extents.z; z++)
             {
                 float zPos = z + 0.5f;
 
-                CombineInstance instance = new CombineInstance();
-                instance.mesh = assetsPack.Walls[0];
+                {
+                    Vector3 position = new Vector3(bound.extents.x - 0.025f, y, zPos) + bound.center;
+                    Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
 
-                Vector3 position = new Vector3(bound.extents.x - 0.025f, y + 0.5f, zPos) + bound.center;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.right);
-                Vector3 scale = new Vector3(1f, 1f, 0.05f);
+                    CombineInstance instance = new CombineInstance();
+                    instance.mesh = GetWallFromInfo(position, 2);
+                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
 
-                instance.transform = Matrix4x4.TRS(position, rotation, scale);
-                combineInstances.Add(instance);
+                    for (int i = 0; i < instance.mesh.subMeshCount; i++)
+                    {
+                        instance.subMeshIndex = i;
+                        combineInstances[i].Add(instance);
+                    }
+                }
+
+                {
+                    Vector3 position = new Vector3(-bound.extents.x + 0.025f, y, zPos) + bound.center;
+                    Quaternion rotation = Quaternion.AngleAxis(-90f, Vector3.up);
+
+                    CombineInstance instance = new CombineInstance();
+                    instance.mesh = GetWallFromInfo(position, 3);
+                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
+
+                    for (int i = 0; i < instance.mesh.subMeshCount; i++)
+                    {
+                        instance.subMeshIndex = i;
+                        combineInstances[i].Add(instance);
+                    }
+                }
             }
-
-
-            for (float z = -bound.extents.z; z < bound.extents.z; z++)
-            {
-                float zPos = z + 0.5f;
-
-                CombineInstance instance = new CombineInstance();
-                instance.mesh = assetsPack.Walls[0];
-
-                Vector3 position = new Vector3(-bound.extents.x + 0.025f, y + 0.5f, zPos) + bound.center;
-                Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, Vector3.left);
-                Vector3 scale = new Vector3(1f, 1f, 0.05f);
-
-                instance.transform = Matrix4x4.TRS(position, rotation, scale);
-                combineInstances.Add(instance);
-            }
-    #endif
-
         }
 
-
-    #if !USE_SINGLE_GO
-        ShapeRenderer render = Instantiate(shapeRendererTemplate, transform);
+        for (int i = 0; i < combineInstances.Count; i++)
+        {
+            ShapeRenderer render = Instantiate(shapeRendererTemplate, transform);
             Mesh mergedMesh = new Mesh();
-            mergedMesh.CombineMeshes(combineInstances.ToArray());
+            mergedMesh.CombineMeshes(combineInstances[i].ToArray());
             mergedMesh.Optimize();
             render.Filter.sharedMesh = mergedMesh;
-    #endif
+            render.Renderer.material = materials[i];
+        }
     }
 
     private void GenerateBridgeMesh(Vector2 start, Vector2 end, float height)
@@ -191,8 +175,7 @@ public class Foundation : CellStructure
 
         direction2D.Normalize();
 
-        // Define vertices
-        float width = .5f; // Width of the bridge
+        float width = .5f;
 
         Vector3 start3D = new Vector3(start.x, 0f, start.y);
         Vector3 direction = new Vector3(direction2D.x, 0f, direction2D.y);
@@ -248,13 +231,13 @@ public class Foundation : CellStructure
 
     private void OnDrawGizmos()
     {
-        //if (virtualCellData.Bounds == null)
-        //    return;
+        if (virtualCellData.Bounds == null)
+            return;
 
-        //foreach (Bounds bound in virtualCellData.Bounds)
-        //{
-        //    DrawShape(bound.center, bound.size);
-        //}
+        foreach (Bounds bound in virtualCellData.Bounds)
+        {
+            DrawShape(bound.center, bound.size);
+        }
     }
 
 }

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FoundationWorldGenerator
   m_EditorClassIdentifier: 
   offset: {x: 0, y: 0}
-  cellScale: 1.1
+  cellScale: 5.5
   spawnRate: 0.2
   noiseResolution: 2
   neighborhoodRange: 5

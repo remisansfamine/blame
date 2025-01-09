@@ -89,7 +89,7 @@ private void GenerateFromBound(Bounds bound)
                 float xPos = x + 0.5f;
 
                 {
-                    Vector3 position = new Vector3(xPos, y, bound.extents.z + 0.5f) + bound.center;
+                    Vector3 position = new Vector3(xPos, y, bound.extents.z - 0.5f) + bound.center;
                     Quaternion rotation = Quaternion.identity;
 
                     CombineInstance instance = new CombineInstance();
@@ -104,7 +104,7 @@ private void GenerateFromBound(Bounds bound)
                 }
 
                 {
-                    Vector3 position = new Vector3(xPos, y, -bound.extents.z - 0.5f) + bound.center;
+                    Vector3 position = new Vector3(xPos, y, -bound.extents.z + 0.5f) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(180f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();
@@ -124,7 +124,7 @@ private void GenerateFromBound(Bounds bound)
                 float zPos = z + 0.5f;
 
                 {
-                    Vector3 position = new Vector3(bound.extents.x + 0.5f, y, zPos) + bound.center;
+                    Vector3 position = new Vector3(bound.extents.x - 0.5f, y, zPos) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();
@@ -139,7 +139,7 @@ private void GenerateFromBound(Bounds bound)
                 }
 
                 {
-                    Vector3 position = new Vector3(-bound.extents.x - 0.5f, y, zPos) + bound.center;
+                    Vector3 position = new Vector3(-bound.extents.x + 0.5f, y, zPos) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(-90f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();

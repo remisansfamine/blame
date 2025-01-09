@@ -37,7 +37,10 @@ public class Foundation : CellStructure
                         Vector2 neighborCenter = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
 
                         Rect neighborRect = new Rect(neighborCenter - 0.5f * Vector2.one, Vector2.one);
-                        GenerateBridgeMesh(selfRect.ClampPosition(neighborCenter), neighborRect.ClampPosition(selfCenter), height);
+
+                        Vector2 direction = (neighborCenter - selfCenter).normalized;
+                        GenerateBridgeMesh(selfRect.PointOnSurface(direction), neighborRect.PointOnSurface(-direction), height);
+                        //GenerateBridgeMesh(selfRect.ClampPosition(neighborCenter), neighborRect.ClampPosition(selfCenter), height);
                     }
                 }
             }
@@ -184,24 +187,25 @@ public class Foundation : CellStructure
     private void GenerateBridgeMesh(Vector2 start, Vector2 end, float height)
     {
         Vector2 direction2D = end - start;
-        float length = direction2D.magnitude;
+        float halfLength = direction2D.magnitude * 0.5f;
 
         direction2D.Normalize();
 
         // Define vertices
-        Vector3[] vertices = new Vector3[4];
         float width = .5f; // Width of the bridge
 
         Vector3 start3D = new Vector3(start.x, 0f, start.y);
         Vector3 direction = new Vector3(direction2D.x, 0f, direction2D.y);
         Vector3 right = Vector3.Cross(direction, Vector3.up) * width * 0.5f;
 
-        // Create a quad (4 vertices)
         Vector3 origin = Vector3.up * height + (start3D - transform.position);
+
+        // Create a quad (4 vertices)
+        Vector3[] vertices = new Vector3[4];
         vertices[0] = origin - right;          
         vertices[1] = origin + right;
-        vertices[2] = origin + direction * length * 0.5f - right;
-        vertices[3] = origin + direction * length * 0.5f + right;
+        vertices[2] = origin + direction * halfLength - right;
+        vertices[3] = origin + direction * halfLength + right;
 
         // Define triangles
         int[] triangles = new int[6]

@@ -9,6 +9,17 @@ public static class RectExtensions
             Mathf.Clamp(position.y, self.yMin, self.yMax)
     );
 
+    public static Vector2 PointOnSurface(this Rect self, Vector2 direction)
+    {
+        float absDirX = Mathf.Abs(direction.x);
+        float absDirY = Mathf.Abs(direction.y);
+
+        float scaleX = (absDirX > 0) ? (self.width * 0.5f) / absDirX : float.MaxValue;
+        float scaleY = (absDirY > 0) ? (self.height * 0.5f) / absDirY : float.MaxValue;
+
+        return self.center + direction * Mathf.Min(scaleX, scaleY);
+    }
+
 
     public static Rect[] Subtract(this Rect self, Rect other)
     {

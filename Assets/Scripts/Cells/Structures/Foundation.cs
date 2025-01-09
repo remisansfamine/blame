@@ -21,44 +21,33 @@ public class Foundation : CellStructure
 
         GenerateShellMesh();
 
-        foreach (FoundationVirtualCellData neighbor in virtualCellData.neighbors)
+        int floorCount = 10;
+        for (int i = 0; i< floorCount; i++)
         {
-            bool[] bridges = GetBridgesForEachFloor(data, neighbor);
-
-            for (int i = 0; i < bridges.Length; i++)
+            float height = -maxDimensions.y * 0.5f + maxDimensions.y * (i / (float)floorCount);
+            if (virtualCellData.IsValidHeight(height))
             {
-                if (bridges[i])
+                foreach (FoundationVirtualCellData neighbor in virtualCellData.neighbors)
                 {
-                    float height = -maxDimensions.y * 0.5f + maxDimensions.y * (i / (float)bridges.Length);
+                    if (neighbor.IsValidHeight(height) && IsBridgeAtFloor(virtualCellData, neighbor, i))
+                    {
+                        Vector2 start = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
+                        Vector2 end = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
 
-                    Vector2 start = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
-                    Vector2 end = new Vector2(neighbor.Position.x * cellScale, neighbor.Position.y * cellScale);
-
-                    GenerateBridgeMesh(start, end, height);
+                        GenerateBridgeMesh(start, end, height);
+                    }
                 }
             }
         }
     }
 
-    //  NOTE : upgrade noise seed ?
-    private float Noise(float noiseResolution, float seed = 0)
+    private bool IsBridgeAtFloor(VirtualCellData selfVirtualCell, VirtualCellData neighborVirtualCell, int floor, float bridgeSpawnRate = 0.25f)
     {
-        float noiseScale = 1f / noiseResolution;
-        return Mathf.PerlinNoise(seed + transform.position.x * noiseScale, seed + transform.position.z * noiseScale);
-    }
+        float a = Mathf.Min(selfVirtualCell.Position.x, neighborVirtualCell.Position.x) + Mathf.Min(selfVirtualCell.Position.y, neighborVirtualCell.Position.y);
+        float b = Mathf.Max(selfVirtualCell.Position.x, neighborVirtualCell.Position.x) + Mathf.Max(selfVirtualCell.Position.y, neighborVirtualCell.Position.y);
+        float hash = HashCode.Combine(a, b, floor) * 10e-9f;
 
-    private bool[] GetBridgesForEachFloor(VirtualCellData selfVirtualCell, VirtualCellData neighborVirtualCell, int floorCount = 10, float bridgePercentage = 0.25f)
-    {
-        bool[] result = new bool[floorCount];
-        for (int i = 0; i < floorCount; i++)
-        {
-            float a = Mathf.Min(selfVirtualCell.Position.x, neighborVirtualCell.Position.x) + Mathf.Min(selfVirtualCell.Position.y, neighborVirtualCell.Position.y);
-            float b = Mathf.Max(selfVirtualCell.Position.x, neighborVirtualCell.Position.x) + Mathf.Max(selfVirtualCell.Position.y, neighborVirtualCell.Position.y);
-            float hash = HashCode.Combine(a, b, i) * 10e-9f;
-
-            result[i] = Mathf.PerlinNoise1D(hash) < bridgePercentage;
-        }
-        return result;
+        return Mathf.PerlinNoise1D(hash) < bridgeSpawnRate;
     }
 
     private void GenerateShellMesh()
@@ -66,20 +55,12 @@ public class Foundation : CellStructure
         foreach (Bounds bound in virtualCellData.Bounds)
         {
             GenerateFromBound(bound);
-
-            //Mesh cubeMesh = bound.CreateCubeMeshFromBounds();
-            //ShapeRenderer shapeRenderer = Instantiate(shapeRendererTemplate, transform);
-            //shapeRenderer.Filter.mesh = cubeMesh;
         }
     }
 
 
     private void GenerateFromBound(Bounds bound)
     {
-        //Vector3 scale = new Vector3(1f / bound.size.x, 1f / bound.size.y, 1f / bound.size.z);
-
-        //CombineInstance[] combineInstance = new CombineInstance[(int)bound.size.y * (int)(bound.size.x * bound.size.z) * 2 ];
-
 
     #if !USE_SINGLE_GO
         List<CombineInstance> combineInstances = new List<CombineInstance>();
@@ -192,8 +173,8 @@ public class Foundation : CellStructure
         ShapeRenderer render = Instantiate(shapeRendererTemplate, transform);
             Mesh mergedMesh = new Mesh();
             mergedMesh.CombineMeshes(combineInstances.ToArray());
+            mergedMesh.Optimize();
             render.Filter.sharedMesh = mergedMesh;
-            render.Filter.mesh.Optimize();
     #endif
     }
 
@@ -254,13 +235,13 @@ public class Foundation : CellStructure
 
     private void OnDrawGizmos()
     {
-        if (virtualCellData.Bounds == null)
-            return;
+        //if (virtualCellData.Bounds == null)
+        //    return;
 
-        foreach (Bounds bound in virtualCellData.Bounds)
-        {
-            DrawShape(bound.center, bound.size);
-        }
+        //foreach (Bounds bound in virtualCellData.Bounds)
+        //{
+        //    DrawShape(bound.center, bound.size);
+        //}
     }
 
 }

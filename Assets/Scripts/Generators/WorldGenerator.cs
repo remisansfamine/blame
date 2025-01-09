@@ -70,6 +70,8 @@ public class WorldGenerator : ScriptableObject
         //  Loading part
         //  ------------
 
+        //  TODO : should do circular loops
+
         Vector2Int currPosition = Vector2Int.zero;
         for (currPosition.x = (int)newRect.xMin; currPosition.x < (int)newRect.xMax; currPosition.x++)
         {

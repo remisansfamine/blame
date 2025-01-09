@@ -17,18 +17,9 @@ public class FoundationWorldGenerators : WorldGenerator
 
         Vector2Int currPosition = Vector2Int.zero;
         for (currPosition.x = cellPosition.x - neighborhoodRange; currPosition.x < cellPosition.x + neighborhoodRange; currPosition.x++)
-        {
             for (currPosition.y = cellPosition.y - neighborhoodRange; currPosition.y < cellPosition.y + neighborhoodRange; currPosition.y++)
-            {
                 if (virtualCells.TryGetValue(currPosition, out VirtualCellData foundNeighbor))
                     newVirtual.AddNeighbor(foundNeighbor);
-            }
-        }
-
-        //HashSet<VirtualCellData> occupiedCellsInRange = virtualCells.Where(pair => pair.Key.SqrdDistance(cellPosition) <= neighborhoodRange * neighborhoodRange)
-        //                                                            .Select(pair => pair.Value)
-        //                                                            .ToHashSet();
-        //newVirtual.AddNeighbors(occupiedCellsInRange);
         
         return newVirtual;
     }

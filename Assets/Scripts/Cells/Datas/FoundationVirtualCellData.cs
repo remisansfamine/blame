@@ -70,4 +70,16 @@ public class FoundationVirtualCellData : VirtualCellData
     {
         DetermineBottomAndTopHeights();
     }
+
+
+    public bool IsValidHeight(float height)
+    {
+        foreach (Bounds bound in bounds)
+        {
+            if (height > bound.min.y && height < bound.max.y)
+                return true;
+        }
+
+        return false;
+    }
 }

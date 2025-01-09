@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: FoundationWorldGenerator
   m_EditorClassIdentifier: 
   offset: {x: 0, y: 0}
-  cellScale: 5.5
-  spawnRate: 0.2
+  cellScale: 3.3
+  spawnRate: 0.3
   noiseResolution: 2
   neighborhoodRange: 5
   cellStructuresTemplate: {fileID: 39226537446289225, guid: 310575ecd64a1bc48a9a0e8b3f1c1cbf, type: 3}

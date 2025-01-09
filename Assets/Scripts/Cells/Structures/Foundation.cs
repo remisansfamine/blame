@@ -24,7 +24,7 @@ public class Foundation : CellStructure
         Vector2 selfCenter = new Vector2(data.Position.x * cellScale, data.Position.y * cellScale);
         Rect selfRect = new Rect(selfCenter - 0.5f * Vector2.one, Vector2.one);
 
-        int floorCount = 50;
+        int floorCount = 25;
         for (int i = 0; i< floorCount; i++)
         {
             float height = -virtualCellData.Dimensions.y * 0.5f + virtualCellData.Dimensions.y * (i / (float)floorCount);
@@ -82,8 +82,6 @@ private void GenerateFromBound(Bounds bound)
                 combineInstances.Add(new List<CombineInstance>());
         }
 
-        Vector3 scale = new Vector3(1f, 1f, 0.05f);
-
         for (float y = -bound.extents.y; y < bound.extents.y; y++)
         {
             for (float x = -bound.extents.x; x < bound.extents.x; x++)
@@ -91,12 +89,12 @@ private void GenerateFromBound(Bounds bound)
                 float xPos = x + 0.5f;
 
                 {
-                    Vector3 position = new Vector3(xPos, y, bound.extents.z - 0.025f) + bound.center;
+                    Vector3 position = new Vector3(xPos, y, bound.extents.z + 0.5f) + bound.center;
                     Quaternion rotation = Quaternion.identity;
 
                     CombineInstance instance = new CombineInstance();
                     instance.mesh = GetWallFromInfo(position, 0);
-                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                    instance.transform = Matrix4x4.TRS(position, rotation, Vector3.one); 
 
                     for (int i = 0; i < instance.mesh.subMeshCount; i++)
                     {
@@ -106,12 +104,12 @@ private void GenerateFromBound(Bounds bound)
                 }
 
                 {
-                    Vector3 position = new Vector3(xPos, y, -bound.extents.z + 0.025f) + bound.center;
+                    Vector3 position = new Vector3(xPos, y, -bound.extents.z - 0.5f) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(180f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();
                     instance.mesh = GetWallFromInfo(position, 1);
-                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                    instance.transform = Matrix4x4.TRS(position, rotation, Vector3.one);
 
                     for (int i = 0; i < instance.mesh.subMeshCount; i++)
                     {
@@ -126,12 +124,12 @@ private void GenerateFromBound(Bounds bound)
                 float zPos = z + 0.5f;
 
                 {
-                    Vector3 position = new Vector3(bound.extents.x - 0.025f, y, zPos) + bound.center;
+                    Vector3 position = new Vector3(bound.extents.x + 0.5f, y, zPos) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(90f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();
                     instance.mesh = GetWallFromInfo(position, 2);
-                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                    instance.transform = Matrix4x4.TRS(position, rotation, Vector3.one);
 
                     for (int i = 0; i < instance.mesh.subMeshCount; i++)
                     {
@@ -141,12 +139,12 @@ private void GenerateFromBound(Bounds bound)
                 }
 
                 {
-                    Vector3 position = new Vector3(-bound.extents.x + 0.025f, y, zPos) + bound.center;
+                    Vector3 position = new Vector3(-bound.extents.x - 0.5f, y, zPos) + bound.center;
                     Quaternion rotation = Quaternion.AngleAxis(-90f, Vector3.up);
 
                     CombineInstance instance = new CombineInstance();
                     instance.mesh = GetWallFromInfo(position, 3);
-                    instance.transform = Matrix4x4.TRS(position, rotation, scale);
+                    instance.transform = Matrix4x4.TRS(position, rotation, Vector3.one);
 
                     for (int i = 0; i < instance.mesh.subMeshCount; i++)
                     {
@@ -161,6 +159,7 @@ private void GenerateFromBound(Bounds bound)
         {
             ShapeRenderer render = Instantiate(shapeRendererTemplate, transform);
             Mesh mergedMesh = new Mesh();
+            mergedMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mergedMesh.CombineMeshes(combineInstances[i].ToArray());
             mergedMesh.Optimize();
             render.Filter.sharedMesh = mergedMesh;
